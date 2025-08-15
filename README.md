@@ -4,3 +4,4 @@
 ## Update Version 1.0
 <img width="1352" height="915" alt="image" src="https://github.com/user-attachments/assets/cafd1dc3-51a0-4a0e-8046-4ae1134e2678" />
 
+<img width="500" height="500" alt="Gaming Logo" src="https://github.com/user-attachments/assets/87411cd7-71c6-43fc-b514-b485675ed8d6" />
