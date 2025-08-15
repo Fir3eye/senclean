@@ -6,19 +6,121 @@
   <title>Senclean — Book Now</title>
   <link rel="stylesheet" href="/style.css"/>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    @media (max-width: 600px) {
+      .grid.grid-2 { display: block; }
+      .card { margin-bottom: 20px; }
+      nav a, .dropdown { display: block; margin: 5px 0; }
+    }
+    .loading { opacity: 0.6; pointer-events: none; }
+
+    /* Navbar styling */
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover { text-decoration: underline; }
+    .dropdown {
+      position: relative;
+    }
+    .dropbtn {
+      background: none;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+    .dropdown-content a {
+      color: black;
+      padding: 8px 12px;
+      display: block;
+      text-decoration: none;
+    }
+    .dropdown-content a:hover { background-color: #f1f1f1; }
+    .dropdown:hover .dropdown-content { display: block; }
+
+    /* About Us section styling */
+    #about-us {
+      background-color: #fff8e1;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    #about-us h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #1e3a8a;
+    }
+    #about-us p {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      line-height: 1.6;
+      font-size: 1.1rem;
+    }
+    #about-us img {
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 12px rgba(0,0,0,0.15);
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
-  <div class="header">
-    <div class="container row" style="justify-content: space-between;">
+
+<header style="background-color: blue; padding: 10px 20px;">
+  <div class="container row" style="display: flex; justify-content: space-between; align-items: center;">
+
+    <!-- Left: Logo + Company Name -->
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <img src="images/logo.png" alt="Senclean Logo" style="height: 50px;">
       <div>
-        <strong>Senclean</strong>
-        <div class="small">Professional Home Deep Cleaning</div>
-      </div>
-      <div class="row">
-        <a href="/admin.html"><button class="secondary">Admin</button></a>
+        <strong style="color:white; font-size: 1.2em;">Senclean</strong>
+        <div class="small" style="color:white;">Professional Home Deep Cleaning</div>
       </div>
     </div>
+
+    <!-- Center: Navigation Menu -->
+    <nav style="display: flex; gap: 20px; align-items: center;">
+      <a href="index.html">Home</a>
+      <a href="aboutus.html">About Us</a>
+
+      <div class="dropdown">
+        <button class="dropbtn">Services ▼</button>
+        <div class="dropdown-content">
+          <a href="/services?type=home">Home Cleaning</a>
+          <a href="/services?type=sofa">Sofa Shampoo</a>
+          <a href="/services?type=kitchen">Kitchen Cleaning</a>
+          <a href="/services/house-cleaning.html">House Cleaning</a>
+          <a href="/services/carpet-cleaning.html">Carpet Cleaning</a>
+          <a href="/services/window-cleaning.html">Window Cleaning</a>
+        </div>
+      </div>
+
+      <a href="#our-work">Our Work</a>
+    </nav>
+
+    <!-- Right: Admin Button -->
+    <a href="admin.html" style="background-color: black; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-weight: bold;">
+      Admin
+    </a>
   </div>
+</header>
+
+
 
   <div class="container">
     <div class="grid grid-2">
@@ -89,9 +191,47 @@
         </ol>
       </div>
     </div>
-    <div class="footer">© <span id="year"></span> Senclean</div>
-  </div>
 
+    <!-- About Us Section -->
+    <section id="about-us">
+      <h2>About Us</h2>
+      <p>
+        Welcome to <strong>Senclean</strong>, your trusted partner in creating spotless, fresh, and inviting spaces.
+        We are a team of highly trained cleaning experts dedicated to delivering top-notch services with eco-friendly products
+        and attention to every detail. From deep home cleaning to specialized sofa and carpet care,
+        our mission is to make your home shine like new.
+      </p>
+      <p>
+        With years of experience and a commitment to customer satisfaction,
+        we ensure that every project we take on is completed to the highest standards.
+        At Senclean, cleanliness is not just our job – it’s our passion.
+      </p>
+      <img src="images/abc.jpg" alt="Senclean Team at Work">
+    </section>
+
+  <h2>Watch Our Introduction & Client Testimonials</h2>
+  <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+    <!-- Video 1 -->
+    <div style="flex: 1; min-width: 300px; max-width: 500px;">
+      <iframe
+        width="100%"
+        height="280"
+        src="https://www.youtube.com/embed/J0wtL4SB2sU"
+        title="About Senclean"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <!-- Video 2 -->
+    <div style="flex: 1; min-width: 300px; max-width: 500px;">
+      <iframe
+        width="100%"
+        height="280"
+        src="https://www.youtube.com/embed/J0wtL4SB2sU"
+        title="Client Testimonials"
+        allowfullscreen>
+      </iframe>
+    </div>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     const form = document.getElementById('bookingForm');
@@ -99,41 +239,68 @@
     const payBtn = document.getElementById('payBtn');
     let lastBooking = null;
 
-    const setMsg = (type, text) => msg.innerHTML = `<div class="${type}">${text}</div>`;
+    const setMsg = (type, text) => {
+      msg.innerHTML = `<div class="${type}">${text}</div>`;
+    };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      form.classList.add('loading');
+      setMsg('info', 'Submitting booking...');
       const payload = Object.fromEntries(new FormData(form).entries());
-      const res = await fetch('/api/bookings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      const j = await res.json();
-      if (!res.ok){ setMsg('error', j.error || 'Failed'); return; }
-      lastBooking = j.booking;
-      setMsg('success', `Booking received! Code: <strong>${j.booking.code}</strong>. We will confirm shortly.`);
-      payBtn.disabled = false;
+      try {
+        const res = await fetch('/api/bookings', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const j = await res.json();
+        if (!res.ok) {
+          setMsg('error', j.error || 'Failed to submit booking');
+          return;
+        }
+        lastBooking = j.booking;
+        setMsg('success', `Booking received! Code: <strong>${j.booking.code}</strong>. We will confirm shortly.`);
+        payBtn.disabled = false;
+        form.reset();
+      } catch (err) {
+        setMsg('error', 'Something went wrong. Please try again.');
+      } finally {
+        form.classList.remove('loading');
+      }
     });
 
     payBtn.addEventListener('click', async () => {
       if (!lastBooking) return alert('Create a booking first');
       const amount = 49900; // ₹499 in paise
-      const res = await fetch('/api/payments/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: lastBooking._id, amount })
-      });
-      const j = await res.json();
-      if (!res.ok) return alert(j.error || 'Payment init failed');
-      const options = {
-        key: j.key,
-        amount: j.order.amount,
-        currency: 'INR',
-        name: 'Senclean',
-        description: 'Advance Payment',
-        order_id: j.order.id,
-        prefill: { name: lastBooking.name, contact: lastBooking.phone },
-        theme: { color: '#111827' }
-      };
-      const rz = new Razorpay(options);
-      rz.open();
+      try {
+        payBtn.classList.add('loading');
+        const res = await fetch('/api/payments/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: lastBooking._id, amount })
+        });
+        const j = await res.json();
+        if (!res.ok) {
+          alert(j.error || 'Payment initiation failed');
+          return;
+        }
+        const options = {
+          key: j.key,
+          amount: j.order.amount,
+          currency: 'INR',
+          name: 'Senclean',
+          description: 'Advance Payment',
+          order_id: j.order.id,
+          prefill: { name: lastBooking.name, contact: lastBooking.phone },
+          theme: { color: '#111827' }
+        };
+        new Razorpay(options).open();
+      } catch (err) {
+        alert('Payment failed. Please try again.');
+      } finally {
+        payBtn.classList.remove('loading');
+      }
     });
   </script>
 </body>
