@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Senclean — Admin</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div class="header">
+    <div class="container row" style="justify-content: space-between;">
+      <div><strong>Senclean</strong> <span class="badge">Admin</span></div>
+      <div class="row">
+        <button onclick="logout()" class="secondary">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="auth" class="card">
+      <h2>Login</h2>
+      <div id="msg"></div>
+      <label>Email</label>
+      <input id="email" placeholder="owner@senclean.local"/>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••"/>
+      <div style="margin-top:10px">
+        <button onclick="login()">Login</button>
+        <button class="secondary" onclick="seed()">Seed Default Admin</button>
+      </div>
+      <p class="small">Default admin is configured in .env (ADMIN_DEFAULT_*). Use "Seed" once after DB connect.</p>
+    </div>
+
+    <div id="app" class="card" style="display:none">
+      <div class="row" style="justify-content: space-between;">
+        <h2>Bookings</h2>
+        <button onclick="load()">Reload</button>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Code</th><th>Created</th><th>Name</th><th>Phone</th><th>Service</th><th>Status</th><th>Assign</th><th>Quote(₹)</th><th>Pay</th><th>Save</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const msg = (t, c='error') => document.getElementById('msg').innerHTML = `<div class="${c}">${t}</div>`;
+    const token = () => localStorage.getItem('token') || '';
+
+    async function seed(){
+      const res = await fetch('/api/auth/seed-admin', { method:'POST' });
+      const j = await res.json();
+      msg(j.message || 'Seeded (or already exists)', 'success');
+    }
+    async function login(){
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const j = await res.json();
+      if (!res.ok){ msg(j.error || 'Login failed'); return; }
+      localStorage.setItem('token', j.token);
+      document.getElementById('auth').style.display='none';
+      document.getElementById('app').style.display='block';
+      load();
+    }
+    function logout(){
+      localStorage.removeItem('token');
+      document.getElementById('app').style.display='none';
+      document.getElementById('auth').style.display='block';
+    }
+    async function load(){
+      const res = await fetch('/api/bookings', { headers: { 'Authorization': 'Bearer ' + token() } });
+      const j = await res.json();
+      if (!res.ok){ alert(j.error || 'Failed'); return; }
+      const rows = j.bookings.map(b => `
+        <tr>
+          <td>${b.code}</td>
+          <td>${b.createdAt ? new Date(b.createdAt).toLocaleString() : ''}</td>
+          <td>${b.name}</td>
+          <td><a href="tel:${b.phone}">${b.phone}</a></td>
+          <td>${b.serviceType}</td>
+          <td>
+            <select data-id="${b._id}" data-field="status">
+              ${['new','confirmed','in-progress','completed','cancelled'].map(s => `<option ${s===b.status?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </td>
+          <td><input data-id="${b._id}" data-field="assignedTo" value="${b.assignedTo || ''}"/></td>
+          <td><input data-id="${b._id}" data-field="priceQuoted" value="${b.priceQuoted || ''}"/></td>
+          <td>${b.paymentStatus}</td>
+          <td><button onclick="save('${b._id}')">Save</button></td>
+        </tr>
+      `).join('');
+      document.getElementById('rows').innerHTML = rows;
+    }
+    async function save(id){
+      const inputs = [...document.querySelectorAll(`[data-id="${id}"]`)];
+      const payload = {};
+      inputs.forEach(i => payload[i.getAttribute('data-field')] = i.value);
+      const res = await fetch('/api/bookings/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+        body: JSON.stringify(payload)
+      });
+      const j = await res.json();
+      if (!res.ok){ alert(j.error || 'Failed'); return; }
+      alert('Saved');
+      load();
+    }
+  </script>
+</body>
+</html>

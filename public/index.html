@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Senclean — Book Now</title>
+  <link rel="stylesheet" href="/style.css"/>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <div class="header">
+    <div class="container row" style="justify-content: space-between;">
+      <div>
+        <strong>Senclean</strong>
+        <div class="small">Professional Home Deep Cleaning</div>
+      </div>
+      <div class="row">
+        <a href="/admin.html"><button class="secondary">Admin</button></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Book a Cleaning</h2>
+        <div id="msg"></div>
+        <form id="bookingForm">
+          <label>Name*</label>
+          <input name="name" required/>
+          <label>Phone*</label>
+          <input name="phone" required/>
+          <label>Address*</label>
+          <textarea name="address" required></textarea>
+          <label>City</label>
+          <input name="city"/>
+          <label>Service Type*</label>
+          <select name="serviceType" required>
+            <option value="">Select</option>
+            <option>Home Deep Cleaning</option>
+            <option>Sofa Shampoo</option>
+            <option>Kitchen Deep Cleaning</option>
+            <option>Bathroom Deep Cleaning</option>
+            <option>Move-in / Move-out</option>
+          </select>
+          <div class="row" style="gap:12px">
+            <div style="flex:1">
+              <label>Bedrooms</label>
+              <input name="bedrooms" type="number" min="0"/>
+            </div>
+            <div style="flex:1">
+              <label>Bathrooms</label>
+              <input name="bathrooms" type="number" min="0"/>
+            </div>
+          </div>
+          <div class="row" style="gap:12px">
+            <div style="flex:1">
+              <label>Date</label>
+              <input name="date" type="date"/>
+            </div>
+            <div style="flex:1">
+              <label>Time</label>
+              <input name="time" type="time"/>
+            </div>
+          </div>
+          <label>Notes</label>
+          <textarea name="notes"></textarea>
+          <div class="row" style="justify-content: space-between; margin-top: 12px;">
+            <button type="submit">Submit Booking</button>
+            <button id="payBtn" type="button" class="secondary" disabled>Pay Advance ₹499</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Why Senclean</h2>
+        <ul>
+          <li>Verified professional crew</li>
+          <li>Eco-friendly supplies on request</li>
+          <li>Festival & move-in specialists</li>
+          <li>Pay online (Razorpay) or after service</li>
+        </ul>
+        <h3>How it works</h3>
+        <ol>
+          <li>Submit the booking form</li>
+          <li>We confirm via WhatsApp/Call</li>
+          <li>Team arrives on time</li>
+          <li>Pay online or on-site</li>
+        </ol>
+      </div>
+    </div>
+    <div class="footer">© <span id="year"></span> Senclean</div>
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const form = document.getElementById('bookingForm');
+    const msg = document.getElementById('msg');
+    const payBtn = document.getElementById('payBtn');
+    let lastBooking = null;
+
+    const setMsg = (type, text) => msg.innerHTML = `<div class="${type}">${text}</div>`;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const res = await fetch('/api/bookings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const j = await res.json();
+      if (!res.ok){ setMsg('error', j.error || 'Failed'); return; }
+      lastBooking = j.booking;
+      setMsg('success', `Booking received! Code: <strong>${j.booking.code}</strong>. We will confirm shortly.`);
+      payBtn.disabled = false;
+    });
+
+    payBtn.addEventListener('click', async () => {
+      if (!lastBooking) return alert('Create a booking first');
+      const amount = 49900; // ₹499 in paise
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: lastBooking._id, amount })
+      });
+      const j = await res.json();
+      if (!res.ok) return alert(j.error || 'Payment init failed');
+      const options = {
+        key: j.key,
+        amount: j.order.amount,
+        currency: 'INR',
+        name: 'Senclean',
+        description: 'Advance Payment',
+        order_id: j.order.id,
+        prefill: { name: lastBooking.name, contact: lastBooking.phone },
+        theme: { color: '#111827' }
+      };
+      const rz = new Razorpay(options);
+      rz.open();
+    });
+  </script>
+</body>
+</html>
