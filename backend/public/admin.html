@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Cleaning Bookings</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/config.js"></script>
+    <script src="/utils.js"></script>
+  </head>
+  <body>
+    <div class="header">
+      <div class="container row" style="justify-content: space-between;">
+        <div>
+          <strong id="brand"></strong> — <span class="badge">Admin</span>
+          <div class="small">Use your ADMIN_KEY to view and update bookings</div>
+        </div>
+        <div class="row">
+          <a href="/" class="button"><button class="secondary">← Back to Site</button></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="row" style="justify-content: space-between; gap: 12px;">
+          <div>
+            <label>Admin Key</label>
+            <input id="key" placeholder="Enter ADMIN_KEY" />
+            <div class="small">Hint: <code id="hint"></code></div>
+          </div>
+          <div>
+            <button id="load">Load Bookings</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="list" class="card">
+        <h2>Bookings</h2>
+        <table class="table">
+          <thead>
+            <tr><th>ID</th><th>Created</th><th>Name</th><th>Phone</th><th>Service</th><th>Status</th><th>Assign</th><th>Quote(₹)</th><th>Save</th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('brand').textContent = window.APP_CONFIG.businessName;
+      document.getElementById('hint').textContent = window.APP_CONFIG.adminKeyHint;
+
+      const keyEl = document.getElementById('key');
+      const rowsEl = document.getElementById('rows');
+      const loadBtn = document.getElementById('load');
+
+      loadBtn.addEventListener('click', load);
+
+      async function load(){
+        rowsEl.innerHTML = '<tr><td colspan="9">Loading...</td></tr>';
+        try {
+          const res = await fetch('/api/bookings', { headers: { 'X-ADMIN-KEY': keyEl.value } });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed');
+          render(data.bookings);
+        } catch (e) {
+          rowsEl.innerHTML = `<tr><td colspan="9"><div class="error">${e.message}</div></td></tr>`;
+        }
+      }
+
+      function render(items){
+        if (!items.length) {
+          rowsEl.innerHTML = '<tr><td colspan="9">No bookings yet.</td></tr>';
+          return;
+        }
+        rowsEl.innerHTML = items.map(b => `
+          <tr>
+            <td>${b.id}</td>
+            <td>${b.createdAt ? new Date(b.createdAt).toLocaleString() : ''}</td>
+            <td>${b.name}</td>
+            <td><a target="_blank" href="tel:${b.phone}">${b.phone}</a></td>
+            <td>${b.serviceType}</td>
+            <td>
+              <select data-id="${b.id}" data-field="status">
+                ${['new','confirmed','in-progress','completed','cancelled'].map(s => `<option ${s===b.status?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </td>
+            <td><input data-id="${b.id}" data-field="assignedTo" placeholder="Team/Worker" value="${b.assignedTo || ''}"/></td>
+            <td><input data-id="${b.id}" data-field="priceQuoted" placeholder="e.g., 4200" value="${b.priceQuoted || ''}"/></td>
+            <td><button onclick="saveRow('${b.id}')">Save</button></td>
+          </tr>
+        `).join('');
+      }
+
+      async function saveRow(id){
+        const key = keyEl.value;
+        const rowInputs = [...document.querySelectorAll(`[data-id="${id}"]`)];
+        const payload = {};
+        rowInputs.forEach(i => payload[i.getAttribute('data-field')] = i.value);
+        try {
+          const res = await fetch('/api/bookings/' + id, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-ADMIN-KEY': key },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed');
+          alert('Saved');
+        } catch (e) {
+          alert('Error: ' + e.message);
+        }
+      }
+
+      window.saveRow = saveRow;
+    </script>
+  </body>
+</html>
